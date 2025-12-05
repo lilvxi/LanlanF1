@@ -1,0 +1,38 @@
+/* Custom styles for F1 Fatal Events Analysis */
+
+/* F1 themed colors */
+:root {
+  --f1-red: #E10600;
+  --f1-dark: #15151E;
+}
+
+/* Navbar styling */
+.navbar {
+  border-bottom: 3px solid var(--f1-red);
+}
+
+/* Code block styling */
+.sourceCode {
+  border-left: 3px solid var(--f1-red);
+}
+
+/* Card styling for callouts */
+.callout {
+  border-left-color: var(--f1-red);
+}
+
+/* Table styling */
+table {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Footer styling */
+.nav-footer {
+  border-top: 3px solid var(--f1-red);
+}
+
+/* Iframe container */
+iframe {
+  margin-top: 1rem;
+}

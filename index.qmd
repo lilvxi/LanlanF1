@@ -1,0 +1,29 @@
+---
+title: "Formula 1 Fatal Events Analysis"
+subtitle: "A Comprehensive Study of Safety in F1 Racing (1950-2024)"
+---
+
+## Overview
+
+This project presents a comprehensive analysis of fatal events in Formula 1 racing from 1950 to 2024. Through data visualization, statistical analysis, and interactive exploration, we examine patterns and factors associated with fatal incidents in the sport's history.
+
+## Project Structure
+
+| Section | Description |
+|---------|-------------|
+| [Data Preparation](step1_dataPreprocess.qmd) | Data sources, cleaning, and preprocessing |
+| [Exploratory Visualization](step2_EDAViz.qmd) | Visual exploration of temporal trends, circuits, constructors, and driver factors |
+| [Statistical Analysis](step3_inferStat.qmd) | Inferential statistics including chi-square tests, t-tests, ANOVA, and logistic regression |
+| [Interactive Explorer](step4_shiny.qmd) | Shiny application for interactive data exploration |
+
+## Key Findings
+
+1. **Temporal Trends**: Fatal events have decreased dramatically since the 1980s
+2. **Driver Factors**: Rookie drivers face higher risks; experience provides protection
+3. **Circuit Characteristics**: Historic European circuits show higher fatality rates
+4. **Safety Evolution**: Continuous improvements in regulations and car design have made F1 significantly safer
+
+## Data Sources
+
+- [Formula 1 World Championship 1950-2020](https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020)
+- [Formula 1 Race Events](https://www.kaggle.com/datasets/jtrotman/formula-1-race-events/data)

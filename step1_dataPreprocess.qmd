@@ -1,0 +1,177 @@
+---
+title: "Formula 1 Fatal Events: Data Preparation"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-fold: true
+    df-print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## 1. Introduction
+
+This document outlines the data preparation process for our analysis of fatal events in Formula 1 racing from 1950 to 2024. We combine data from multiple sources to create a comprehensive dataset that includes race information, driver details, constructor (team) information, and fatal event records.
+
+## 2. Data Sources
+
+The data for this analysis comes from two primary sources:
+
+1. **Formula 1 World Championship 1950-2020**: A comprehensive dataset containing race results, driver information, constructor details, and circuit data.
+   - Available at: https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020
+
+2. **Formula 1 Race Events**: A specialized dataset containing information about fatal accidents in Formula 1.
+   - Available at: https://www.kaggle.com/datasets/jtrotman/formula-1-race-events/data
+
+These datasets were downloaded and stored in the folders `formula-1-world-championship-1950-2020` and `formula-1-race-events` respectively.
+
+## 3. Data Preparation
+
+Our data preparation process involves several steps:
+
+1. Loading and preparing race and circuit information
+2. Loading constructor and driver details
+3. Combining race results with these datasets
+4. Adding fatal accident information
+5. Final data cleaning and formatting
+
+Let's walk through each step using tidyverse functions for data manipulation.
+
+### 3.1 Required Libraries
+
+```{r libraries}
+library(tidyverse)
+library(readr)
+```
+
+### 3.2 Load and Prepare Race and Circuit Information
+
+First, we load race information and combine it with circuit details:
+
+```{r race-circuit-data}
+# Load and prepare races data
+races <- read_csv('formula-1-world-championship-1950-2020/races.csv') %>%
+  arrange(date) %>%
+  mutate(Race = paste(year, name)) %>%
+  select(raceId, circuitId, year, name, date, Race)
+
+# Load and prepare circuit data
+circuit <- read_csv('formula-1-world-championship-1950-2020/circuits.csv') %>%
+  rename(
+    circuit.name = name,
+    circuit.location = location,
+    circuit.country = country
+  ) %>%
+  select(circuitId, circuit.name, circuit.location, circuit.country, lat, lng)
+
+# Join circuit data to races
+races <- left_join(races, circuit, by = "circuitId")
+```
+
+### 3.3 Load Constructor and Driver Information
+
+Next, we prepare constructor (team) and driver information:
+
+```{r constructor-driver-data}
+# Load and prepare constructor data
+constructor <- read_csv('formula-1-world-championship-1950-2020/constructors.csv') %>%
+  rename(
+    constructor.name = name,
+    constructor.nationality = nationality
+  ) %>%
+  select(constructorId, constructor.name, constructor.nationality)
+
+# Load and prepare driver data
+driver <- read_csv('formula-1-world-championship-1950-2020/drivers.csv') %>%
+  mutate(driver.name = paste(forename, surname)) %>%
+  rename(
+    driver.nationality = nationality,
+    driver.dob = dob
+  ) %>%
+  select(driverId, driver.name, driver.nationality, driver.dob)
+```
+
+### 3.4 Combine Race Results with Supporting Information
+
+We now load the race results and join them with the previously prepared datasets:
+
+```{r combine-data}
+# Load and prepare results data (initial dataOK creation)
+dataOK <- read_csv('formula-1-world-championship-1950-2020/results.csv') %>%
+  select(raceId, driverId, constructorId, points) %>%
+  # Join with previously prepared datasets
+  left_join(races, by = "raceId") %>%
+  left_join(constructor, by = "constructorId") %>%
+  left_join(driver, by = "driverId") %>%
+  arrange(date, desc(points))
+```
+
+### 3.5 Add Fatal Accident Information
+
+Finally, we incorporate the fatal accident data and finalize our dataset:
+
+```{r fatal-data}
+# Load and prepare fatal driver data
+fatalDriver <- read_csv('formula-1-race-events/fatal_accidents_drivers.csv') %>%
+  # Keep only records in races dataset
+  filter(Event %in% races$Race) %>%  
+  # Fix specific driver name for consistency
+  mutate(Driver = if_else(Driver == 'Jerry Unser Jr.', 'Jerry Unser', Driver)) %>%
+  filter(Driver != "Bob Cortner") %>%
+  # Create fatal data format
+  rename(
+    Race = Event,
+    driver.name = Driver
+  ) %>%
+  mutate(FATAL = 'Death') %>%
+  select(Race, driver.name, FATAL)
+
+# Join fatal data with main dataset
+dataOK <- dataOK %>%
+  left_join(fatalDriver, by = c("Race", "driver.name")) %>%
+  # Replace NA with 'NULL' for non-fatal events
+  mutate(FATAL = if_else(is.na(FATAL), 'NULL', FATAL)) %>%
+  # Sort by date and points
+  arrange(date, desc(points)) %>%
+  # Rename columns for consistency
+  rename(
+    driver.fatal = FATAL,
+    driver.points = points
+  )
+
+save(dataOK,file='dataOK.RData')
+```
+
+## 4. Final Dataset Overview
+
+The final dataset `dataOK` contains comprehensive information about Formula 1 races, drivers, constructors, and fatal events from 1950 to 2024.
+
+```{r dataset-summary}
+# Display dimensions of the final dataset
+dim(dataOK)
+
+# Display the structure of the dataset
+glimpse(dataOK)
+
+# Show a few example rows
+head(dataOK, 10)
+
+# Summary of fatal events
+table(dataOK$driver.fatal)
+```
+
+### 4.1 Dataset Description
+
+The final `dataOK` dataset contains `r nrow(dataOK)` records with `r ncol(dataOK)` variables. Each row represents a driver's participation in a specific race. The key columns include:
+
+- **Race information**: `Race` (unique identifier), `raceId`, `year`, `date`, `name` (race name)
+- **Circuit information**: `circuit.name`, `circuit.location`, `circuit.country`, `lat`, `lng` (geographical coordinates)
+- **Constructor information**: `constructor.name`, `constructor.nationality`
+- **Driver information**: `driver.name`, `driver.nationality`, `driver.dob` (date of birth)
+- **Performance information**: `driver.points` (points scored in the race)
+- **Fatal events**: `driver.fatal` (indicates if the driver had a fatal accident, "Death" or "NULL")
+
+This dataset provides a rich foundation for analyzing the patterns and factors associated with fatal events in Formula 1 racing over its history.

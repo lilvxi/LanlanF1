@@ -1,0 +1,56 @@
+project:
+  type: website
+  output-dir: .
+
+website:
+  title: "Formula 1 Fatal Events Analysis (1950-2024)"
+  description: "A comprehensive analysis of fatal events in Formula 1 racing history"
+  sidebar: false
+  navbar:
+    background: "#15151E"
+    foreground: "#FFFFFF"
+    logo: "https://www.formula1.com/etc/designs/fom-website/images/f1_logo.svg"
+    logo-alt: "F1 Logo"
+    left:
+      - href: index.qmd
+        text: Home
+      - href: step1_dataPreprocess.qmd
+        text: Data Preparation
+      - href: step2_EDAViz.qmd
+        text: Visualization
+      - href: step3_inferStat.qmd
+        text: Statistical Analysis
+      - href: step4_shiny.qmd
+        text: Interactive Explorer
+    right:
+      - icon: github
+        href: https://github.com/yourusername/LanlanF1
+        aria-label: GitHub
+ 
+  page-footer:
+    center: |
+      © 2024 Formula 1 Fatal Events Analysis Project
+    background: "#15151E"
+
+format:
+  html:
+    theme:
+      light: flatly
+      dark: darkly
+    css: styles.css
+    toc: false
+    toc-depth: 3
+    code-fold: true
+    code-tools: true
+    code-copy: true
+    highlight-style: github
+    df-print: paged
+    fig-width: 10
+    fig-height: 6
+    fig-dpi: 300
+    page-layout: full
+
+execute:
+  warning: false
+  message: false
+  echo: true
